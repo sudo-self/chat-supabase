@@ -18,177 +18,140 @@ const AppContextProvider = ({ children }) => {
   const [countryCode, setCountryCode] = useState("");
   const [isInitialLoad, setIsInitialLoad] = useState(false);
 
+  const scrollRef = useRef();
+
+  const randomUsername = () => `@user${Date.now().toString().slice(-4)}`;
+
+  const initializeUser = (session) => {
+    setSession(session);
+    let uname = session?.user.user_metadata.user_name;
+    if (!uname) {
+      uname = localStorage.getItem("username") || randomUsername();
+    }
+    setUsername(uname);
+    localStorage.setItem("username", uname);
+  };
+
+  const getLocation = async () => {
+    try {
+      const res = await fetch("https://api.db-ip.com/v2/free/self");
+      const { countryCode } = await res.json();
+      setCountryCode(countryCode);
+      localStorage.setItem("countryCode", countryCode);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    // Effect to scroll to bottom on initial message load
+    const init = async () => {
+      // Handle OAuth redirect
+      if (window.location.hash.includes("access_token")) {
+        const { data: { session }, error } =
+          await supabase.auth.getSessionFromUrl();
+        if (error) console.error("OAuth error:", error.message);
+        if (session) {
+          initializeUser(session);
+          window.history.replaceState({}, document.title, "/");
+        }
+      } else {
+        const { data: { session } } = await supabase.auth.getSession();
+        initializeUser(session);
+      }
+
+      getMessagesAndSubscribe();
+
+      const storedCountryCode = localStorage.getItem("countryCode");
+      if (storedCountryCode && storedCountryCode !== "undefined") {
+        setCountryCode(storedCountryCode);
+      } else {
+        getLocation();
+      }
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => initializeUser(session)
+      );
+
+      return () => {
+        if (myChannel) supabase.removeChannel(myChannel);
+        subscription.unsubscribe();
+      };
+    };
+
+    init();
+  }, []);
+
+  useEffect(() => {
     if (isInitialLoad) {
       setIsInitialLoad(false);
       scrollToBottom();
     }
   }, [messages]);
 
-  const getLocation = async () => {
-    try {
-      const res = await fetch("https://api.db-ip.com/v2/free/self");
-      const { countryCode, error } = await res.json();
-      if (error) throw new Error(error);
-
-      setCountryCode(countryCode);
-      localStorage.setItem("countryCode", countryCode);
-    } catch (error) {
-      console.error(
-        `error getting location from api.db-ip.com:`,
-        error.message
-      );
-    }
-  };
-
-  const randomUsername = () => {
-    return `@user${Date.now().toString().slice(-4)}`;
-  };
-  const initializeUser = (session) => {
-    setSession(session);
-    // const {
-    //   data: { session },
-    // } = await supabase.auth.getSession();
-
-    let username;
-    if (session) {
-      username = session.user.user_metadata.user_name;
-    } else {
-      username = localStorage.getItem("username") || randomUsername();
-    }
-    setUsername(username);
-    localStorage.setItem("username", username);
-  };
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      initializeUser(session);
-    });
-
-    getMessagesAndSubscribe();
-
-    const storedCountryCode = localStorage.getItem("countryCode");
-    if (storedCountryCode && storedCountryCode !== "undefined")
-      setCountryCode(storedCountryCode);
-    else getLocation();
-
-    const {
-      data: { subscription: authSubscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("onAuthStateChange", { _event, session });
-      initializeUser(session);
-    });
-
-    // const { hash, pathname } = window.location;
-    // if (hash && pathname === "/") {
-    //   console.log("hash", hash);
-    //   setRouteHash(hash);
-    // }
-
-    return () => {
-      // Remove supabase channel subscription by useEffect unmount
-      if (myChannel) {
-        supabase.removeChannel(myChannel);
-      }
-
-      authSubscription.unsubscribe();
-    };
-  }, []);
-
   useEffect(() => {
     if (!newIncomingMessageTrigger) return;
-
-    if (newIncomingMessageTrigger.username === username) {
-      scrollToBottom();
-    } else {
-      setUnviewedMessageCount((prevCount) => prevCount + 1);
-    }
+    if (newIncomingMessageTrigger.username === username) scrollToBottom();
+    else setUnviewedMessageCount((c) => c + 1);
   }, [newIncomingMessageTrigger]);
 
   const handleNewMessage = (payload) => {
-    setMessages((prevMessages) => [payload.new, ...prevMessages]);
-    //* needed to trigger react state because I need access to the username state
+    setMessages((prev) => [payload.new, ...prev]);
     setNewIncomingMessageTrigger(payload.new);
   };
 
   const getInitialMessages = async () => {
     if (messages.length) return;
-
     const { data, error } = await supabase
       .from("messages")
       .select()
       .range(0, 49)
       .order("id", { ascending: false });
-    // console.log(`data`, data);
-
     setLoadingInitial(false);
-    if (error) {
-      setError(error.message);
-      return;
+    if (error) setError(error.message);
+    else {
+      setIsInitialLoad(true);
+      setMessages(data);
     }
-
-    setIsInitialLoad(true);
-    setMessages(data);
-    // scrollToBottom(); // not sure why this stopped working, meanwhile using useEffect that's listening to messages and isInitialLoad state.
   };
 
   const getMessagesAndSubscribe = async () => {
     setError("");
-
     await getInitialMessages();
-
     if (!myChannel) {
-      // mySubscription = supabase
-      // .from("messages")
-      // .on("*", (payload) => {
-      //   handleNewMessage(payload);
-      // })
-      // .subscribe();
-
       myChannel = supabase
         .channel("custom-all-channel")
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "messages" },
-          (payload) => {
-            handleNewMessage(payload);
-          }
+          handleNewMessage
         )
         .subscribe();
     }
   };
 
-  const scrollRef = useRef();
   const onScroll = async ({ target }) => {
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 1) {
       setUnviewedMessageCount(0);
       setIsOnBottom(true);
-    } else {
-      setIsOnBottom(false);
-    }
+    } else setIsOnBottom(false);
 
-    //* Load more messages when reaching top
     if (target.scrollTop === 0) {
-      // console.log("messages.length :>> ", messages.length);
       const { data, error } = await supabase
         .from("messages")
         .select()
         .range(messages.length, messages.length + 49)
         .order("id", { ascending: false });
-      if (error) {
-        setError(error.message);
-        return;
+      if (error) setError(error.message);
+      else {
+        target.scrollTop = 1;
+        setMessages((prev) => [...prev, ...data]);
       }
-      target.scrollTop = 1;
-      setMessages((prevMessages) => [...prevMessages, ...data]);
     }
   };
 
   const scrollToBottom = () => {
-    if (!scrollRef.current) return;
-
-    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   };
 
   return (
@@ -218,4 +181,5 @@ const AppContextProvider = ({ children }) => {
 
 const useAppContext = () => useContext(AppContext);
 
-export { AppContext as default, AppContextProvider, useAppContext };
+export { AppContextProvider, useAppContext, AppContext as default };
+
