@@ -4,7 +4,7 @@ html, body {
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
-  background-color: #f9fafb;
+  background-color: #f7fafc;
   font-family: system-ui, sans-serif;
 }
 
@@ -13,36 +13,37 @@ html, body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #e0e0e0;
+  background: #e2e8f0;
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #4fd1c5, #3182ce);
+  background: linear-gradient(180deg, #38b2ac, #2b6cb0);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #38b2ac, #2c5282);
+  background: linear-gradient(180deg, #319795, #2c5282);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #4fd1c5 #e0e0e0;
+  scrollbar-color: #38b2ac #e2e8f0;
 }
 
 a {
-  color: #6b46c1;
+  color: #5a67d8;
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #9f7aea;
+  color: #7f9cf5;
 }
 
-input:focus {
+input:focus, textarea:focus {
   outline: 2px solid #3182ce;
   outline-offset: 2px;
 }
+
 
