@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useRef, useState } from "react";
-import { Input, Stack, IconButton } from "@chakra-ui/react";
+import { Input, Stack, IconButton, Text } from "@chakra-ui/react";
 import { BiSave, BiEdit } from "react-icons/bi";
 import { useAppContext } from "../context/appContext";
 
@@ -7,74 +9,78 @@ export default function NameForm() {
   const { username, setUsername } = useAppContext();
   const [newUsername, setNewUsername] = useState(username);
   const [isEditing, setIsEditing] = useState(false);
-  const toggleEditing = () => {
-    setIsEditing(!isEditing);
-  };
 
   const inputRef = useRef(null);
 
+  // Focus input when editing starts
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isEditing]);
+
+  // Keep local state in sync if username changes externally
   useEffect(() => {
     setNewUsername(username);
   }, [username]);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    toggleEditing();
 
-    if (!newUsername) {
+  const toggleEditing = () => setIsEditing(!isEditing);
+
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+
+    const cleanedUsername = newUsername.trim();
+    if (!cleanedUsername) {
       setNewUsername(username);
+      setIsEditing(false);
       return;
     }
-    // setUsername(newUsername);
-    // setIsEditing(false);
 
-    setUsername(newUsername);
-    localStorage.setItem("username", newUsername);
+    setUsername(cleanedUsername);
+    localStorage.setItem("username", cleanedUsername);
+    setIsEditing(false);
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginRight: "20px" }}>
-      <Stack direction="row">
+    <form onSubmit={handleSubmit}>
+      <Stack direction="row" align="center" spacing={2}>
         {isEditing ? (
           <Input
             name="username"
             placeholder="Choose a username"
-            onChange={(e) => setNewUsername(e.target.value)}
             value={newUsername}
-            bg="gray.100"
-            size="sm"
-            border="none"
-            onBlur={handleSubmit}
+            onChange={(e) => setNewUsername(e.target.value)}
             ref={inputRef}
-            maxLength="15"
+            size="sm"
+            maxLength={15}
+            bg="gray.100"
+            border="1px solid"
+            borderColor="gray.300"
           />
         ) : (
-          <span onClick={toggleEditing} style={{ cursor: "pointer" }}>
+          <Text
+            onClick={toggleEditing}
+            cursor="pointer"
+            fontSize="sm"
+            fontWeight="medium"
+          >
             Welcome <strong>{newUsername}</strong>
-          </span>
+          </Text>
         )}
+
         <IconButton
           size="sm"
-          paddingBottom="12px"
           variant="outline"
           colorScheme="teal"
-          aria-label="Save"
-          fontSize="15px"
-          border="none"
-          color="teal"
+          aria-label={isEditing ? "Save username" : "Edit username"}
+          icon={isEditing ? <BiSave /> : <BiEdit />}
           onClick={(e) => {
-            if (isEditing) {
-              handleSubmit(e);
-            } else toggleEditing();
+            if (isEditing) handleSubmit(e);
+            else toggleEditing();
           }}
-        >
-          {isEditing ? <BiSave /> : <BiEdit />}
-        </IconButton>
+        />
       </Stack>
     </form>
   );
 }
+
