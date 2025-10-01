@@ -1,9 +1,9 @@
 import { Badge, Box, Container, IconButton } from "@chakra-ui/react";
 import { useEffect, useState, useCallback } from "react";
+import { BsChevronDoubleDown } from "react-icons/bs";
 import { useAppContext } from "../context/appContext";
 import Messages from "./Messages";
-import { BsChevronDoubleDown } from "react-icons/bs";
-import { useColorModeValue } from "@/components/ui/color-mode"; 
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function Chat() {
   const [height, setHeight] = useState(window.innerHeight - 205);
@@ -16,6 +16,8 @@ export default function Chat() {
   } = useAppContext();
 
   const bgColor = useColorModeValue("white", "gray.800");
+  const badgeBg = useColorModeValue("green.500", "green.300");
+  const iconColor = useColorModeValue("black", "white");
 
   const handleResize = useCallback(() => {
     setHeight(window.innerHeight - 205);
@@ -39,9 +41,18 @@ export default function Chat() {
         position="relative"
       >
         <Messages />
+
         {!isOnBottom && (
           <IconButton
             aria-label="Scroll to bottom"
+            onClick={scrollToBottom}
+            size="sm"
+            position="sticky"
+            bottom="8px"
+            float="right"
+            zIndex="1"
+            variant="solid"
+            colorScheme="teal"
             icon={
               unviewedMessageCount > 0 ? (
                 <Badge
@@ -52,28 +63,23 @@ export default function Chat() {
                   px="2"
                   display="flex"
                   alignItems="center"
+                  bg={badgeBg}
+                  color={iconColor}
                 >
                   {unviewedMessageCount}
                   <BsChevronDoubleDown style={{ marginLeft: "3px" }} />
                 </Badge>
               ) : (
-                <BsChevronDoubleDown />
+                <BsChevronDoubleDown color={iconColor} />
               )
             }
-            onClick={scrollToBottom}
-            size="sm"
-            position="sticky"
-            bottom="8px"
-            float="right"
-            zIndex="1"
-            variant="solid"
-            colorScheme="teal"
           />
         )}
       </Box>
     </Container>
   );
 }
+
 
 
 
