@@ -1,56 +1,20 @@
-import { Alert, Box, Button, Spinner } from "@chakra-ui/react";
+import { Box, Spinner, Alert, Button } from "@chakra-ui/react";
 import { useAppContext } from "../context/appContext";
 import Message from "./Message";
-import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function Messages() {
-  const { username, loadingInitial, error, getMessagesAndSubscribe, messages } =
-    useAppContext();
-
+  const { username, loadingInitial, error, getMessagesAndSubscribe, messages } = useAppContext();
   const reversed = [...messages].reverse();
-  const alertBg = useColorModeValue("red.100", "red.700");
-  const alertColor = useColorModeValue("red.800", "red.100");
 
-  if (loadingInitial)
-    return (
-      <Box textAlign="center" py="20px">
-        <Spinner size="xl" />
-      </Box>
-    );
+  if (loadingInitial) return <Box textAlign="center"><Spinner /></Box>;
+  if (error) return (
+    <Alert status="error" mt="20px">
+      {error} <Button ml="5px" onClick={getMessagesAndSubscribe} colorScheme="red" variant="link">try to reconnect</Button>
+    </Alert>
+  );
+  if (!messages.length) return <Box as="h3" textAlign="center">No messages 😞</Box>;
 
-  if (error)
-    return (
-      <Box
-        mt="20px"
-        p="3"
-        borderRadius="8px"
-        bg={alertBg}
-        color={alertColor}
-        textAlign="center"
-      >
-        {error}
-        <Button
-          ml="8px"
-          size="sm"
-          colorScheme="red"
-          variant="outline"
-          onClick={getMessagesAndSubscribe}
-        >
-          Retry
-        </Button>
-      </Box>
-    );
-
-  if (!messages.length)
-    return (
-      <Box as="h3" textAlign="center" py="20px" color={useColorModeValue("gray.600", "gray.300")}>
-        No messages 😞
-      </Box>
-    );
-
-  return reversed.map((message) => {
-    const isYou = message.username === username;
-    return <Message key={message.id} message={message} isYou={isYou} />;
-  });
+  return reversed.map((message) => <Message key={message.id} message={message} isYou={message.username === username} />);
 }
+
 
