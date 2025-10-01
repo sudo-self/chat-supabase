@@ -1,79 +1,62 @@
-// App.jsx
-
-'use client'
-
-import { Box } from "@chakra-ui/react";
+import { Box, useColorModeValue } from "@chakra-ui/react";
 import { Provider } from "@/components/ui/provider";
-import { AppContextProvider, useAppContext } from "./context/appContext";
+import "./App.css";
 import Header from "./layout/Header";
 import Footer from "./layout/Footer";
 import Chat from "./components/Chat";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
-import supabase from "./supabaseClient";
+import { AppContextProvider, useAppContext } from "./context/appContext";
 
-function App() {
+function AppWrapper() {
   return (
     <Provider>
-      <AppContextProvider>
-        <AppContent />
-      </AppContextProvider>
+      <App />
     </Provider>
   );
 }
 
-function AppContent() {
-  const { routeHash } = useAppContext();
+function App() {
+  const { username, setUsername, routeHash } = useAppContext();
+  const bgColor = useColorModeValue("gray.100", "gray.900");
 
-
-  useEffect(() => {
-    const handleOAuthRedirect = async () => {
-      const hash = window.location.hash;
-      if (hash.includes("access_token")) {
-        const { data: { session }, error } = await supabase.auth.getSessionFromUrl();
-        if (error) {
-          console.error("OAuth error:", error.message);
-        } else if (session) {
-          console.log("Logged in:", session.user);
-          window.history.replaceState({}, document.title, "/"); 
-        }
-      }
-    };
-    handleOAuthRedirect();
-  }, []);
-
-
-  useEffect(() => {
-    if (!routeHash) return;
+  if (routeHash) {
     if (routeHash.endsWith("&type=recovery")) {
       window.location.replace(`/login/${routeHash}`);
     }
-    if (routeHash.startsWith("#error_code=404")) {
-      alert("This link has expired");
-      window.location.replace("/");
-    }
-  }, [routeHash]);
+    if (routeHash.startsWith("#error_code=404"))
+      return (
+        <div>
+          <p>This link has expired</p>
+          <a href="/" style={{ cursor: "pointer" }} variant="link">
+            Back to app
+          </a>
+        </div>
+      );
+  }
 
   return (
-    <Box bg="gray.100" minH="100vh">
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Header />
-                <Chat />
-                <Footer />
-              </>
-            }
-          />
-          <Route path="*" element={<p>Not found</p>} />
-        </Routes>
-      </Router>
-    </Box>
+    <AppContextProvider>
+      <Box bg={bgColor} minH="100vh">
+        <Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <Header />
+                  <Chat />
+                  <Footer />
+                </>
+              }
+            />
+            <Route path="*" element={<p>Not found</p>} />
+          </Routes>
+        </Router>
+      </Box>
+    </AppContextProvider>
   );
 }
 
-export default App;
+export default AppWrapper;
+
 
