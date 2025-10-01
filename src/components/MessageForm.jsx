@@ -1,27 +1,33 @@
 import { useState } from "react";
 import { Input, Stack, IconButton, Box, Container } from "@chakra-ui/react";
-import { toaster } from "@/components/ui/toaster";
 import { BiSend } from "react-icons/bi";
+import { toaster } from "@/components/ui/toaster";
 import { useAppContext } from "../context/appContext";
 import supabase from "../supabaseClient";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function MessageForm() {
   const { username, country, session } = useAppContext();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  const inputBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const bgContainer = useColorModeValue("gray.100", "gray.800");
+  const warningColor = useColorModeValue("gray.500", "gray.300");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    const trimmed = message.trim();
+    if (!trimmed) return;
 
     setIsSending(true);
-    const messageText = message.trim();
     setMessage("");
 
     try {
       const { error } = await supabase.from("messages").insert([
         {
-          text: messageText,
+          text: trimmed,
           username,
           country,
           is_authenticated: !!session,
@@ -38,12 +44,11 @@ export default function MessageForm() {
           color: "white",
           background: "#ef4444",
         });
-        return;
       }
-    } catch (error) {
+    } catch (err) {
       toaster.create({
         title: "Error sending",
-        description: error.message || "Unknown error",
+        description: err.message || "Unknown error",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -56,37 +61,38 @@ export default function MessageForm() {
   };
 
   return (
-    <Box py="15px" bg="gray.100">
+    <Box py="15px" bg={bgContainer}>
       <Container maxW="600px">
         <form onSubmit={handleSubmit} autoComplete="off">
           <Stack direction="row" spacing={2}>
             <Input
               name="message"
               placeholder="Enter a message"
-              onChange={(e) => setMessage(e.target.value)}
               value={message}
-              bg="white"
+              onChange={(e) => setMessage(e.target.value)}
+              bg={inputBg}
               border="1px solid"
-              borderColor="gray.300"
+              borderColor={borderColor}
               autoFocus
               maxLength={500}
             />
             <IconButton
+              type="submit"
               aria-label="Send message"
               icon={<BiSend />}
-              type="submit"
               colorScheme="teal"
+              fontSize="20px"
               isLoading={isSending}
               isDisabled={!message.trim()}
-              fontSize="20px"
             />
           </Stack>
         </form>
-        <Box fontSize="10px" mt="1" color="gray.500">
+        <Box fontSize="10px" mt="1" color={warningColor}>
           Warning: do not share sensitive information
         </Box>
       </Container>
     </Box>
   );
 }
+
 
