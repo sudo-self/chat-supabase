@@ -9,17 +9,12 @@ export default function NameForm() {
   const { username, setUsername } = useAppContext();
   const [newUsername, setNewUsername] = useState(username);
   const [isEditing, setIsEditing] = useState(false);
-
   const inputRef = useRef(null);
 
-  // Focus input when editing starts
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (isEditing && inputRef.current) inputRef.current.focus();
   }, [isEditing]);
 
-  // Keep local state in sync if username changes externally
   useEffect(() => {
     setNewUsername(username);
   }, [username]);
@@ -29,15 +24,15 @@ export default function NameForm() {
   const handleSubmit = (e) => {
     e?.preventDefault();
 
-    const cleanedUsername = newUsername.trim();
-    if (!cleanedUsername) {
+    const cleaned = newUsername.trim();
+    if (!cleaned) {
       setNewUsername(username);
       setIsEditing(false);
       return;
     }
 
-    setUsername(cleanedUsername);
-    localStorage.setItem("username", cleanedUsername);
+    setUsername(cleaned);
+    localStorage.setItem("username", cleaned);
     setIsEditing(false);
   };
 
@@ -46,11 +41,10 @@ export default function NameForm() {
       <Stack direction="row" align="center" spacing={2}>
         {isEditing ? (
           <Input
-            name="username"
-            placeholder="Choose a username"
+            ref={inputRef}
             value={newUsername}
             onChange={(e) => setNewUsername(e.target.value)}
-            ref={inputRef}
+            placeholder="Choose a username"
             size="sm"
             maxLength={15}
             bg="gray.100"
@@ -83,4 +77,5 @@ export default function NameForm() {
     </form>
   );
 }
+
 
