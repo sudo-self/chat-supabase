@@ -1,32 +1,48 @@
-body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-}
-html {
+html, body {
   height: -webkit-fill-available;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  background-color: #f9fafb;
+  font-family: system-ui, sans-serif;
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
-/* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #e0e0e0;
+  border-radius: 6px;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
-  /* background: #888; */
-  background: #3faaac;
-  border-radius: 5px;
+  background: linear-gradient(180deg, #4fd1c5, #3182ce);
+  border-radius: 6px;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #2c7a7b;
+  background: linear-gradient(180deg, #38b2ac, #2c5282);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4fd1c5 #e0e0e0;
 }
 
 a {
-  color: teal !important;
+  color: #6b46c1;
+  text-decoration: underline;
+  transition: color 0.2s ease;
 }
+
+a:hover {
+  color: #9f7aea;
+}
+
+input:focus {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
+
