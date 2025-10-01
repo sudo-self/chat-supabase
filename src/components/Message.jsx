@@ -1,93 +1,14 @@
-import { Box, Grid, GridItem } from "@chakra-ui/react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { MdVerified } from "react-icons/md";
-import { truncateText } from "../utils";
-
-dayjs.extend(relativeTime);
+import { Box, Text } from "@chakra-ui/react";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function Message({ message, isYou }) {
-  const countryCode =
-    message.country && message.country !== "undefined"
-      ? message.country.toLowerCase()
-      : "";
-
+  const bgColor = isYou ? useColorModeValue("teal.100", "teal.700") : useColorModeValue("gray.200", "gray.600");
   return (
-    <Box display="grid" justifyItems={isYou ? "end" : "start"}>
-      <Grid
-        templateRows="30px 1fr 25px"
-        w="70%"
-        px="3"
-        py="2"
-        borderRadius="5px"
-        borderTopLeftRadius={isYou ? "5px" : "0"}
-        borderTopRightRadius={isYou ? "0" : "5px"}
-        bg={isYou ? "#dbfff9" : "#edf3f9"}
-        mt="5"
-        position="relative"
-        _after={{
-          content: "''",
-          position: "absolute",
-          width: 0,
-          height: 0,
-          borderStyle: "solid",
-          borderWidth: isYou ? "0 0 10px 10px" : "0 10px 10px 0",
-          borderColor: isYou
-            ? "transparent transparent transparent #dbfff9"
-            : "transparent #edf3f9 transparent transparent",
-          top: 0,
-          left: isYou ? "auto" : "-10px",
-          right: isYou ? "-10px" : "auto",
-        }}
-      >
-        <GridItem
-          fontWeight="500"
-          fontSize="md"
-          justifySelf="start"
-          color="gray.500"
-          mb="2"
-        >
-          <span>{message.username}</span>
-          {message.is_authenticated && (
-            <MdVerified
-              color="#1d9bf0"
-              style={{ display: "inline", marginLeft: "5px" }}
-            />
-          )}
-          {countryCode && (
-            <Box display="inline-block" fontSize="10px" ml="2">
-              from {message.country}{" "}
-              <img
-                style={{ display: "inline-block", marginTop: "-4px", marginLeft: "2px" }}
-                src={`/flags/${countryCode}.png`}
-                alt={message.country}
-                width={14}
-                height={10}
-              />
-            </Box>
-          )}
-        </GridItem>
-
-        <GridItem
-          justifySelf="start"
-          textAlign="left"
-          wordBreak="break-word"
-          fontSize="md"
-          fontFamily="Montserrat, sans-serif"
-        >
-          {truncateText(message.text)}
-        </GridItem>
-
-        <GridItem
-          color="gray"
-          fontSize="10px"
-          justifySelf="end"
-          alignSelf="end"
-        >
-          {dayjs(message.timestamp).fromNow()}
-        </GridItem>
-      </Grid>
+    <Box bg={bgColor} p="3" my="2" borderRadius="md" maxW="80%" alignSelf={isYou ? "flex-end" : "flex-start"}>
+      <Text fontSize="sm" fontWeight="bold">{message.username}</Text>
+      <Text fontSize="sm">{message.text}</Text>
     </Box>
   );
 }
+
 
