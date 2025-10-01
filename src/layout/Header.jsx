@@ -1,30 +1,32 @@
-import { Button, Grid, GridItem, Image } from "@chakra-ui/react";
+import { Button, Grid, GridItem, Image, useColorModeValue } from "@chakra-ui/react";
 import { FaGithub } from "react-icons/fa";
 import supabase from "../supabaseClient";
-import { ColorModeButton } from "@/components/ui/color-mode";
-
 import { useAppContext } from "../context/appContext";
 import NameForm from "./NameForm";
+
 export default function Header() {
   const { username, setUsername, randomUsername, session } = useAppContext();
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("#edf2f7", "gray.700");
 
   return (
     <Grid
       templateColumns="max-content 1fr min-content"
       justifyItems="center"
       alignItems="center"
-      bg="white"
+      bg={bgColor}
       position="sticky"
       top="0"
       zIndex="10"
-      borderBottom="20px solid #edf2f7"
+      borderBottom="4px solid"
+      borderColor={borderColor}
+      px="2"
+      py="1"
     >
-      <GridItem justifySelf="start" m="2">
-        <Image src="/logo.png" height="30px" ml="2" />
+      <GridItem justifySelf="start">
+        <Image src="/logo.png" height="30px" />
       </GridItem>
-      {/* <GridItem>
-        <ColorModeButton />
-      </GridItem> */}
+
       {session ? (
         <>
           <GridItem justifySelf="end" alignSelf="center" mr="4">
@@ -37,9 +39,9 @@ export default function Header() {
             onClick={() => {
               const { error } = supabase.auth.signOut();
               if (error) return console.error("error signOut", error);
-              const username = randomUsername();
-              setUsername(username);
-              localStorage.setItem("username", username);
+              const newUsername = randomUsername();
+              setUsername(newUsername);
+              localStorage.setItem("username", newUsername);
             }}
           >
             Log out
@@ -47,8 +49,8 @@ export default function Header() {
         </>
       ) : (
         <>
-          <GridItem justifySelf="end" alignSelf="end">
-            <NameForm username={username} setUsername={setUsername} />
+          <GridItem justifySelf="end" alignSelf="center">
+            <NameForm />
           </GridItem>
           <Button
             size="sm"
@@ -61,12 +63,12 @@ export default function Header() {
                 redirectTo: window.location.origin,
               })
             }
-            color="teal"
           >
-            Login <FaGithub />
+            Login <FaGithub style={{ marginLeft: "4px" }} />
           </Button>
         </>
       )}
     </Grid>
   );
 }
+
