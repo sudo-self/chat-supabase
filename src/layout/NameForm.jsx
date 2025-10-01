@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from "react";
-import { Input, Stack, IconButton, Text } from "@chakra-ui/react";
+import { Input, Stack, IconButton, Text, useColorModeValue } from "@chakra-ui/react";
 import { BiSave, BiEdit } from "react-icons/bi";
 import { useAppContext } from "../context/appContext";
 
@@ -10,6 +10,10 @@ export default function NameForm() {
   const [newUsername, setNewUsername] = useState(username);
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef(null);
+
+  const inputBg = useColorModeValue("gray.100", "gray.700");
+  const inputBorder = useColorModeValue("gray.300", "gray.600");
+  const textColor = useColorModeValue("gray.800", "gray.100");
 
   useEffect(() => {
     if (isEditing && inputRef.current) inputRef.current.focus();
@@ -47,9 +51,11 @@ export default function NameForm() {
             placeholder="Choose a username"
             size="sm"
             maxLength={15}
-            bg="gray.100"
+            bg={inputBg}
             border="1px solid"
-            borderColor="gray.300"
+            borderColor={inputBorder}
+            color={textColor}
+            _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           />
         ) : (
           <Text
@@ -57,6 +63,7 @@ export default function NameForm() {
             cursor="pointer"
             fontSize="sm"
             fontWeight="medium"
+            color={textColor}
           >
             Welcome <strong>{newUsername}</strong>
           </Text>
@@ -77,5 +84,6 @@ export default function NameForm() {
     </form>
   );
 }
+
 
 
