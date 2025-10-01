@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from "react";
-import { Input, Stack, IconButton, Text, useColorModeValue } from "@chakra-ui/react";
+import { Input, Stack, IconButton, Text } from "@chakra-ui/react";
 import { BiSave, BiEdit } from "react-icons/bi";
 import { useAppContext } from "../context/appContext";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function NameForm() {
   const { username, setUsername } = useAppContext();
@@ -14,6 +15,7 @@ export default function NameForm() {
   const inputBg = useColorModeValue("gray.100", "gray.700");
   const inputBorder = useColorModeValue("gray.300", "gray.600");
   const textColor = useColorModeValue("gray.800", "gray.100");
+  const placeholderColor = useColorModeValue("gray.500", "gray.400");
 
   useEffect(() => {
     if (isEditing && inputRef.current) inputRef.current.focus();
@@ -27,14 +29,12 @@ export default function NameForm() {
 
   const handleSubmit = (e) => {
     e?.preventDefault();
-
     const cleaned = newUsername.trim();
     if (!cleaned) {
       setNewUsername(username);
       setIsEditing(false);
       return;
     }
-
     setUsername(cleaned);
     localStorage.setItem("username", cleaned);
     setIsEditing(false);
@@ -55,7 +55,7 @@ export default function NameForm() {
             border="1px solid"
             borderColor={inputBorder}
             color={textColor}
-            _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
+            _placeholder={{ color: placeholderColor }}
           />
         ) : (
           <Text
@@ -68,22 +68,19 @@ export default function NameForm() {
             Welcome <strong>{newUsername}</strong>
           </Text>
         )}
-
         <IconButton
           size="sm"
           variant="outline"
           colorScheme="teal"
           aria-label={isEditing ? "Save username" : "Edit username"}
           icon={isEditing ? <BiSave /> : <BiEdit />}
-          onClick={(e) => {
-            if (isEditing) handleSubmit(e);
-            else toggleEditing();
-          }}
+          onClick={(e) => (isEditing ? handleSubmit(e) : toggleEditing())}
         />
       </Stack>
     </form>
   );
 }
+
 
 
 
