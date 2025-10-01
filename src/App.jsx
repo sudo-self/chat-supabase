@@ -1,5 +1,6 @@
-import { Box, useColorModeValue } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { Provider } from "@/components/ui/provider";
+import { useColorModeValue } from "@/components/ui/color-mode"; // use your custom hook
 import "./App.css";
 import Header from "./layout/Header";
 import Footer from "./layout/Footer";
@@ -17,7 +18,7 @@ function AppWrapper() {
 
 function App() {
   const { username, setUsername, routeHash } = useAppContext();
-  const bgColor = useColorModeValue("gray.100", "gray.900");
+  const bgColor = useColorModeValue("gray.100", "gray.900"); // from your custom hook
 
   if (routeHash) {
     if (routeHash.endsWith("&type=recovery")) {
@@ -58,5 +59,6 @@ function App() {
 }
 
 export default AppWrapper;
+
 
 
