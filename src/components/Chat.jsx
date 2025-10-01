@@ -1,5 +1,5 @@
-import { Badge, Box, Container } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Badge, Box, Container, IconButton } from "@chakra-ui/react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppContext } from "../context/appContext";
 import Messages from "./Messages";
 import { BsChevronDoubleDown } from "react-icons/bs";
@@ -13,11 +13,15 @@ export default function Chat() {
     isOnBottom,
     unviewedMessageCount,
   } = useAppContext();
-  useEffect(() => {
-    window.addEventListener("resize", () => {
-      setHeight(window.innerHeight - 205);
-    });
+
+  const handleResize = useCallback(() => {
+    setHeight(window.innerHeight - 205);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   return (
     <Container maxW="600px" pb="20px">
@@ -29,38 +33,42 @@ export default function Chat() {
         height={height}
         onScroll={onScroll}
         ref={scrollRef}
+        position="relative"
       >
         <Messages />
         {!isOnBottom && (
-          <div
-            style={{
-              position: "sticky",
-              bottom: 8,
-              // right: 0,
-              float: "right",
-              cursor: "pointer",
-            }}
+          <IconButton
+            aria-label="Scroll to bottom"
+            icon={
+              unviewedMessageCount > 0 ? (
+                <Badge
+                  ml="1"
+                  fontSize="0.8em"
+                  colorScheme="green"
+                  borderRadius="7px"
+                  px="2"
+                  display="flex"
+                  alignItems="center"
+                >
+                  {unviewedMessageCount}
+                  <BsChevronDoubleDown style={{ marginLeft: "3px" }} />
+                </Badge>
+              ) : (
+                <BsChevronDoubleDown />
+              )
+            }
             onClick={scrollToBottom}
-          >
-            {unviewedMessageCount > 0 ? (
-              <Badge
-                ml="1"
-                fontSize="0.8em"
-                colorScheme="green"
-                display="flex"
-                borderRadius="7px"
-                padding="3px 5px"
-                alignItems="center"
-              >
-                {unviewedMessageCount}
-                <BsChevronDoubleDown style={{ marginLeft: "3px" }} />
-              </Badge>
-            ) : (
-              <BsChevronDoubleDown style={{ marginLeft: "3px" }} />
-            )}
-          </div>
+            size="sm"
+            position="sticky"
+            bottom="8px"
+            float="right"
+            zIndex="1"
+            variant="solid"
+            colorScheme="teal"
+          />
         )}
       </Box>
     </Container>
   );
 }
+
