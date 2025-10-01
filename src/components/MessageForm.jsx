@@ -1,98 +1,70 @@
 import { useState } from "react";
 import { Input, Stack, IconButton, Box, Container } from "@chakra-ui/react";
 import { BiSend } from "react-icons/bi";
-import { toaster } from "@/components/ui/toaster";
 import { useAppContext } from "../context/appContext";
 import supabase from "../supabaseClient";
-import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function MessageForm() {
   const { username, country, session } = useAppContext();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  const inputBg = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.300", "gray.600");
-  const bgContainer = useColorModeValue("gray.100", "gray.800");
-  const warningColor = useColorModeValue("gray.500", "gray.300");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const trimmed = message.trim();
-    if (!trimmed) return;
+    if (!message.trim()) return;
 
     setIsSending(true);
+    const messageText = message.trim();
     setMessage("");
 
     try {
-      const { error } = await supabase.from("messages").insert([
-        {
-          text: trimmed,
-          username,
-          country,
-          is_authenticated: !!session,
-        },
-      ]);
-
-      if (error) {
-        toaster.create({
-          title: "Error sending",
-          description: error.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          color: "white",
-          background: "#ef4444",
-        });
-      }
+      const { error } = await supabase.from("messages").insert([{
+        text: messageText,
+        username,
+        country,
+        is_authenticated: !!session,
+      }]);
+      if (error) throw error;
     } catch (err) {
-      toaster.create({
-        title: "Error sending",
-        description: err.message || "Unknown error",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        color: "white",
-        background: "#ef4444",
-      });
+      console.error("Error sending message:", err.message || err);
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <Box py="15px" bg={bgContainer}>
+    <Box py="15px" bg="gray.100">
       <Container maxW="600px">
         <form onSubmit={handleSubmit} autoComplete="off">
           <Stack direction="row" spacing={2}>
             <Input
-              name="message"
               placeholder="Enter a message"
-              value={message}
               onChange={(e) => setMessage(e.target.value)}
-              bg={inputBg}
+              value={message}
+              bg="white"
               border="1px solid"
-              borderColor={borderColor}
+              borderColor="gray.300"
               autoFocus
               maxLength={500}
             />
             <IconButton
-              type="submit"
               aria-label="Send message"
               icon={<BiSend />}
+              type="submit"
               colorScheme="teal"
-              fontSize="20px"
               isLoading={isSending}
               isDisabled={!message.trim()}
+              fontSize="20px"
             />
           </Stack>
         </form>
-        <Box fontSize="10px" mt="1" color={warningColor}>
+        <Box fontSize="10px" mt="1" color="gray.500">
           Warning: do not share sensitive information
         </Box>
       </Container>
     </Box>
   );
 }
+
 
 
